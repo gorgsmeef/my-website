@@ -259,7 +259,6 @@ let player = null;
 let playerX = 170;
 let score = 0;
 let paused = false;
-let activeIntervals = [];
 
 /* ==== START GAME ==== */
 function startGame() {
@@ -268,7 +267,7 @@ function startGame() {
   spawnBeerCan();
 }
 
-/* ==== PAUSE / RESUME ==== */
+/* ==== PAUSE ==== */
 document.getElementById("pauseBtn").onclick = function () {
   paused = !paused;
   this.innerText = paused ? "Resume" : "Pause";
@@ -318,8 +317,6 @@ function spawnBeerCan() {
       }
     }
   }, 10);
-
-  activeIntervals.push(fallInterval);
 }
 
 /* ==== GAME OVER ==== */
@@ -336,31 +333,36 @@ function finishGame() {
   setTimeout(spawnBeerCan, 500);
 }
 
-/* ==== LEADERBOARD ==== */
+/* ==== FIXED SAVE (FORCES NUMBER) ==== */
 function saveScore(name, score) {
   db.ref("leaderboard").push({
     name: name,
-    score: score,
+    score: Number(score),
     timestamp: Date.now()
   });
 }
 
+/* ==== FIXED LOAD (MANUAL SORTING) ==== */
 function loadLeaderboard() {
-  db.ref("leaderboard")
-    .orderByChild("score")
-    .limitToLast(10)
-    .on("value", snap => {
-      let rows = [];
-      snap.forEach(child => rows.push(child.val()));
-      rows.reverse();
+  db.ref("leaderboard").on("value", snap => {
 
-      let html = "<h3>Top 10 Scores</h3>";
-      rows.forEach(entry => {
-        html += `<div style="padding:6px;">${entry.name}: <b>${entry.score}</b></div>`;
-      });
+    let rows = [];
+    snap.forEach(child => rows.push(child.val()));
 
-      document.getElementById("leaderboard-list").innerHTML = html;
+    // sort highest → lowest
+    rows.sort((a, b) => b.score - a.score);
+
+    // top 10
+    rows = rows.slice(0, 10);
+
+    let html = "<h3>Top 10 Scores</h3>";
+
+    rows.forEach(entry => {
+      html += `<div style="padding:6px;">${entry.name}: <b>${entry.score}</b></div>`;
     });
+
+    document.getElementById("leaderboard-list").innerHTML = html;
+  });
 }
 
 /* ==== COMMENTS ==== */

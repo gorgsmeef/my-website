@@ -207,7 +207,14 @@
 
   <!-- MINIGAME -->
   <section id="game-section">
-    <h2>Catch the Beer Cans</h2>
+    <h2 style="text-align:center;">
+  Catch the Beer Cans 
+  <button id="pauseBtn" 
+          style="margin-left:10px;padding:6px 14px;font-size:0.9rem;cursor:pointer;">
+    Pause
+  </button>
+</h2>
+
     <div id="game-container">
       <div id="player"></div>
       <div id="score">Score: 0</div>
@@ -253,6 +260,9 @@
 <!-- ========================= -->
 
 <script>
+  let paused = false;
+let activeIntervals = [];
+
 /* Your Firebase config (from firebase thing.txt) */
 const firebaseConfig = {
   apiKey: "AIzaSyAumyoE9xkHP6ybY0O_52-O8Ro7OBbHjtg",
@@ -300,9 +310,18 @@ function spawnBeerCan() {
   let canY = -60;
   const fallSpeed = 3;
 
-  const fallInterval = setInterval(() => {
-    canY += fallSpeed;
-    can.style.top = canY + "px";
+ const fallInterval = setInterval(() => {
+  if (paused) return;
+
+  canY += fallSpeed;
+  can.style.top = canY + "px";
+
+  ...
+}, 10);
+
+activeIntervals.push(fallInterval);
+
+
 
     if (canY > 530) {
       const canX = parseInt(can.style.left);
@@ -407,7 +426,18 @@ window.onload = function() {
   loadLeaderboard();
   loadComments();
 };
+  document.getElementById("pauseBtn").onclick = function () {
+  paused = !paused;
+
+  if (paused) {
+    this.innerText = "Resume";
+  } else {
+    this.innerText = "Pause";
+  }
+};
+
 </script>
 
 </body>
 </html>
+

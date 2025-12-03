@@ -16,7 +16,7 @@
     :root {
       --bg-color: #f8f8f8;
       --text-color: #222;
-      --accent-color: #000000; /* BLACK top bar */
+      --accent-color: #000000;
       --light-color: #ffffff;
     }
 
@@ -29,33 +29,32 @@
       line-height: 1.6;
     }
 
-    /* HEADER */
     .header {
       background: var(--accent-color);
       color: var(--light-color);
       text-align: center;
       padding: 60px 20px;
     }
+
     .header h1 {
       margin: 0;
       font-size: 2.4rem;
       letter-spacing: 1px;
       font-weight: 700;
     }
+
     .header p {
       margin: 10px 0 0;
       font-size: 1.1rem;
       opacity: 0.85;
     }
 
-    /* MAIN CONTAINER */
     .container {
       max-width: 900px;
       margin: 0 auto;
       padding: 30px 20px;
     }
 
-    /* GALLERY */
     .gallery {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -72,7 +71,6 @@
       background: #ddd;
     }
 
-    /* SECTION HEADERS */
     .bio h2,
     .tribute h2,
     #game-section h2,
@@ -81,11 +79,9 @@
       margin-top: 40px;
       border-bottom: 2px solid #000;
       padding-bottom: 8px;
-      color: #000;
       text-align: center;
     }
 
-    /* FOOTER */
     .footer {
       text-align: center;
       padding: 20px;
@@ -94,20 +90,19 @@
       margin-top: 40px;
     }
 
-    /* TOP LOGO */
     .top-logo {
       position: absolute;
       top: 20px;
       left: 20px;
       z-index: 999;
     }
+
     .top-logo img {
       height: 60px;
       width: auto;
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
     }
 
-    /* MINIGAME AREA */
     #game-container {
       width: 400px;
       height: 600px;
@@ -148,22 +143,18 @@
       color: #333;
     }
 
-    /* COMMENTS BOX */
     #comments-list div {
       padding: 10px;
       border-bottom: 1px solid #ddd;
     }
-
   </style>
 </head>
 <body>
 
-<!-- TOP LEFT LOGO -->
 <div class="top-logo">
   <img src="bindaybrewing1.jpg" alt="Bin Day Brewing Logo">
 </div>
 
-<!-- HEADER -->
 <header class="header">
   <h1>In Memory of BIN DAY BREWING</h1>
   <p>Founded by Robbie Knox — A passion project to be remembered</p>
@@ -171,7 +162,6 @@
 
 <div class="container">
 
-  <!-- GALLERY -->
   <section class="gallery">
     <img src="bindaybrewing.jpg" alt="Bin Day Brewing Logo">
     <img src="bindayglass.jpg" alt="Bin Day Brewing glass">
@@ -179,7 +169,6 @@
     <img src="themockup.jpg" alt="Can mockup artwork">
   </section>
 
-  <!-- ABOUT -->
   <section class="bio">
     <h2>About Bin Day Brewing</h2>
     <p>
@@ -192,28 +181,25 @@
     </p>
   </section>
 
-  <!-- TRIBUTE -->
   <section class="tribute">
     <h2>Remembering the Spirit</h2>
     <p>
       For many, Bin Day Brewing wasn’t just a beer brand — it was a spark during difficult times,
       an idea that made people smile, and a project that captured imagination.
     </p>
-    <p>
-      I was too young to try it myself, but I wish I could've.
-    </p>
+    <p>I was too young to try it myself, but I wish I could've.</p>
     <p><em>“Gone, but not forgotten.”</em></p>
   </section>
 
-  <!-- MINIGAME -->
+  <!-- GAME WITH PAUSE BUTTON -->
   <section id="game-section">
     <h2 style="text-align:center;">
-  Catch the Beer Cans 
-  <button id="pauseBtn" 
-          style="margin-left:10px;padding:6px 14px;font-size:0.9rem;cursor:pointer;">
-    Pause
-  </button>
-</h2>
+      Catch the Beer Cans
+      <button id="pauseBtn"
+        style="margin-left:10px;padding:6px 14px;font-size:0.9rem;cursor:pointer;">
+        Pause
+      </button>
+    </h2>
 
     <div id="game-container">
       <div id="player"></div>
@@ -221,7 +207,6 @@
     </div>
   </section>
 
-  <!-- LEADERBOARD -->
   <section id="leaderboard-section">
     <h2>Global Leaderboard</h2>
     <div id="leaderboard-list" style="max-width:400px;margin:0 auto;text-align:center;">
@@ -229,16 +214,15 @@
     </div>
   </section>
 
-  <!-- COMMENTS -->
   <section id="comments-section">
     <h2>Community Comments</h2>
 
     <div style="max-width:600px;margin:20px auto;text-align:center;">
-      <input id="comment-name" placeholder="Your name" 
+      <input id="comment-name" placeholder="Your name"
              style="padding:10px;width:45%;margin:5px;">
-      <input id="comment-text" placeholder="Your comment..." 
+      <input id="comment-text" placeholder="Your comment..."
              style="padding:10px;width:45%;margin:5px;">
-      <button onclick="submitComment()" 
+      <button onclick="submitComment()"
               style="padding:10px 20px;margin-top:10px;">Post</button>
     </div>
 
@@ -255,15 +239,8 @@
   This tribute page was created in appreciation of Bin Day Brewing and the impact it had.
 </footer>
 
-<!-- ========================= -->
-<!--  JAVASCRIPT + FIREBASE   -->
-<!-- ========================= -->
-
 <script>
-  let paused = false;
-let activeIntervals = [];
-
-/* Your Firebase config (from firebase thing.txt) */
+/* Firebase config */
 const firebaseConfig = {
   apiKey: "AIzaSyAumyoE9xkHP6ybY0O_52-O8Ro7OBbHjtg",
   authDomain: "bin-day-brewing.firebaseapp.com",
@@ -274,24 +251,32 @@ const firebaseConfig = {
   appId: "1:540124499398:web:9f053c28d0d4d7df9c36c7"
 };
 
-/* Initialise Firebase */
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-/* ========================= */
-/*       MINIGAME CODE       */
-/* ========================= */
+/* ==== GAME VARIABLES ==== */
 let player = null;
 let playerX = 170;
 let score = 0;
+let paused = false;
+let activeIntervals = [];
 
+/* ==== START GAME ==== */
 function startGame() {
   player = document.getElementById("player");
   document.addEventListener("keydown", movePlayer);
   spawnBeerCan();
 }
 
+/* ==== PAUSE / RESUME ==== */
+document.getElementById("pauseBtn").onclick = function () {
+  paused = !paused;
+  this.innerText = paused ? "Resume" : "Pause";
+};
+
 function movePlayer(e) {
+  if (paused) return;
+
   const speed = 20;
   if (e.key === "ArrowLeft" || e.key === "a") playerX -= speed;
   if (e.key === "ArrowRight" || e.key === "d") playerX += speed;
@@ -300,6 +285,7 @@ function movePlayer(e) {
   player.style.left = playerX + "px";
 }
 
+/* ==== FALLING CAN ==== */
 function spawnBeerCan() {
   const container = document.getElementById("game-container");
   const can = document.createElement("div");
@@ -310,18 +296,11 @@ function spawnBeerCan() {
   let canY = -60;
   const fallSpeed = 3;
 
- const fallInterval = setInterval(() => {
-  if (paused) return;
+  const fallInterval = setInterval(() => {
+    if (paused) return;
 
-  canY += fallSpeed;
-  can.style.top = canY + "px";
-
-  ...
-}, 10);
-
-activeIntervals.push(fallInterval);
-
-
+    canY += fallSpeed;
+    can.style.top = canY + "px";
 
     if (canY > 530) {
       const canX = parseInt(can.style.left);
@@ -339,8 +318,11 @@ activeIntervals.push(fallInterval);
       }
     }
   }, 10);
+
+  activeIntervals.push(fallInterval);
 }
 
+/* ==== GAME OVER ==== */
 function finishGame() {
   let name = prompt("Game Over! Score: " + score + "\nEnter your name:");
   if (!name) name = "Anonymous";
@@ -354,7 +336,7 @@ function finishGame() {
   setTimeout(spawnBeerCan, 500);
 }
 
-/* SAVE SCORE TO FIREBASE */
+/* ==== LEADERBOARD ==== */
 function saveScore(name, score) {
   db.ref("leaderboard").push({
     name: name,
@@ -363,7 +345,6 @@ function saveScore(name, score) {
   });
 }
 
-/* LOAD LEADERBOARD */
 function loadLeaderboard() {
   db.ref("leaderboard")
     .orderByChild("score")
@@ -382,7 +363,7 @@ function loadLeaderboard() {
     });
 }
 
-/* COMMENTS */
+/* ==== COMMENTS ==== */
 function submitComment() {
   const name = document.getElementById("comment-name").value.trim();
   const text = document.getElementById("comment-text").value.trim();
@@ -401,7 +382,6 @@ function submitComment() {
   document.getElementById("comment-text").value = "";
 }
 
-/* LOAD COMMENTS */
 function loadComments() {
   db.ref("comments")
     .limitToLast(50)
@@ -420,24 +400,13 @@ function loadComments() {
     });
 }
 
-/* RUN EVERYTHING */
+/* ==== INIT ==== */
 window.onload = function() {
   startGame();
   loadLeaderboard();
   loadComments();
 };
-  document.getElementById("pauseBtn").onclick = function () {
-  paused = !paused;
-
-  if (paused) {
-    this.innerText = "Resume";
-  } else {
-    this.innerText = "Pause";
-  }
-};
-
 </script>
 
 </body>
 </html>
-

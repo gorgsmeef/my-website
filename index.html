@@ -1,23 +1,159 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>My Simple Site</title>
-    <style>
-      body {
-        max-width: 600px;
-        margin: 60px auto;
-        font-family: Arial, sans-serif;
-        text-align: center;
-      }
-      img {
-        max-width: 100%;
-        border-radius: 12px;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Rest in peace Bin Day Brewing</h1>
-    <img src="bindaybrewing.jpg" alt="My Photo">
-    <p>I was too young to want to try it, and now I've missed out.</p>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bin Day Brewing — In Memory</title>
+  <link rel="icon" type="image/png" href="favicon.ico">
+  <style>
+    :root {
+      --bg-color: #f8f8f8;
+      --text-color: #222;
+      --accent-color: #000000; /* BLACK top bar */
+      --light-color: #ffffff;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-color);
+      color: var(--text-color);
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    /* HEADER */
+    .header {
+      background: var(--accent-color);
+      color: var(--light-color);
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+    .header p {
+      margin: 10px 0 0;
+      font-size: 1.1rem;
+      opacity: 0.85;
+    }
+
+    /* MAIN CONTAINER */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    /* GALLERY */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(080px, 1fr));
+      gap: 20px;
+      margin: 40px 0;
+    }
+
+    .gallery img {
+      width: 100%;
+      height: 220px; /* <<< adjust if needed */
+      object-fit: cover;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      background: #ddd;
+    }
+
+    /* SECTION HEADERS */
+    .bio h2,
+    .tribute h2 {
+      margin-top: 40px;
+      border-bottom: 2px solid #000;
+      padding-bottom: 8px;
+      color: #000;
+    }
+
+    /* FOOTER */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 40px;
+    }
+
+.top-logo {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 999;
+}
+
+.top-logo img {
+  height: 60px; /* adjust size */
+  width: auto;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+  </style>
+</head>
+<body>
+    <div class="top-logo">
+     <img src="bindaybrewing.jpg" alt="Bin Day Brewing Logo">
+</div>
+
+  <!-- HEADER -->
+  <header class="header">
+    <h1>In Memory of BIN DAY BREWING</h1>
+    <p>Founded by Robbie Knox — A passion project to be remembered</p>
+  </header>
+
+  <div class="container">
+
+    <!-- GALLERY -->
+    <section class="gallery">
+      <img src="bindaybrewing.jpg" alt="Bin Day Brewing Logo">
+      <img src="bindayglass.jpg" alt="Bin Day Brewing glass">
+      <img src="rollwithit.jpg" alt="Roll With It beer">
+      <img src="themockup.jpg" alt="Can mockup artwork">
+    </section>
+
+    <!-- ABOUT SECTION -->
+    <section class="bio">
+      <h2>About Bin Day Brewing</h2>
+      <p>
+        Bin Day Brewing began as a humble lockdown-era project between Robbie Knox and a friend —
+        starting from beer kits brewed at home and eventually growing into an official business
+        
+      </p>
+
+      <p>
+        Their vision was simple: craft beers made with passion, humour, and heart.
+        Though the brewery has since closed, what it represented deserves a legacy.
+      </p>
+    </section>
+
+    <!-- TRIBUTE SECTION -->
+    <section class="tribute">
+      <h2>Remembering the Spirit</h2>
+      <p>
+        For many, Bin Day Brewing wasn’t just a beer brand — it was a spark during difficult times,
+        an idea that made people smile, and a project that captured imagination.
+      </p>
+
+      <p>
+        I was too young to try it myself, but I wish I could've.
+      </p>
+
+      <p><em>“Gone, but not forgotten.”</em></p>
+    </section>
+
+  </div>
+
+  <footer class="footer">
+    This tribute page was created in appreciation of Bin Day Brewing and the impact it had.
+  </footer>
+
+</body>
 </html>

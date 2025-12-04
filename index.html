@@ -3,244 +3,308 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bin Day Brewing — In Memory</title>
+  <title>Bin Day Brewing — Tribute</title>
+  <link rel="icon" href="favicon.ico" />
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.ico">
+  <!-- Inter Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet"/>
 
-  <!-- Firebase (compat version) -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
   <style>
     :root {
-      --bg-color: #f8f8f8;
-      --text-color: #222;
-      --accent-color: #000000;
-      --light-color: #ffffff;
+      --accent: #ffb341;
+      --text: #222;
+      --bg: #f8f8f8;
+      --card: #fff;
+      --shadow: rgba(0,0,0,0.12);
     }
 
     body {
       margin: 0;
-      padding: 0;
-      background: var(--bg-color);
-      color: var(--text-color);
-      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      font-family: "Inter", sans-serif;
+      background: var(--bg);
+      color: var(--text);
       line-height: 1.6;
+      overflow-x: hidden;
     }
 
-    .header {
-      background: var(--accent-color);
-      color: var(--light-color);
+    /* ================= HERO ================= */
+    .hero {
+      background: url("bindaybrewing.jpg") center/cover no-repeat;
+      padding: 160px 20px;
       text-align: center;
-      padding: 60px 20px;
+      color: white;
+      box-shadow: inset 0 0 0 2000px rgba(0,0,0,0.55);
     }
 
-    .header h1 {
-      margin: 0;
-      font-size: 2.4rem;
-      letter-spacing: 1px;
+    .hero h1 {
+      font-size: 3.4rem;
       font-weight: 700;
+      margin: 0;
     }
 
-    .header p {
-      margin: 10px 0 0;
-      font-size: 1.1rem;
-      opacity: 0.85;
+    .hero p {
+      font-size: 1.3rem;
+      opacity: 0.9;
     }
 
+    .socials {
+      margin-top: 25px;
+    }
+    .socials a {
+      margin: 0 15px;
+      font-size: 2.1rem;
+      color: white;
+      text-decoration: none;
+      transition: 0.2s;
+    }
+    .socials a:hover {
+      color: var(--accent);
+    }
+
+    /* ================= LAYOUT ================= */
     .container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 30px 20px;
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px;
     }
 
+    h2.section-title {
+      text-align: center;
+      font-size: 2.3rem;
+      font-weight: 700;
+      margin: 60px 0 20px;
+      position: relative;
+    }
+
+    h2.section-title::after {
+      content: "";
+      display: block;
+      width: 100px;
+      height: 4px;
+      background: var(--accent);
+      margin: 12px auto 0;
+      border-radius: 2px;
+    }
+
+    /* ================= GALLERY ================= */
     .gallery {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
-      margin: 40px 0;
+      gap: 14px;
+      margin-top: 30px;
     }
 
     .gallery img {
       width: 100%;
       height: 220px;
       object-fit: cover;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-radius: 10px;
       background: #ddd;
+      transition: 0.25s;
+      box-shadow: 0 4px 12px var(--shadow);
     }
 
-    .bio h2,
-    .tribute h2,
-    #game-section h2,
-    #leaderboard-section h2,
-    #comments-section h2 {
-      margin-top: 40px;
-      border-bottom: 2px solid #000;
-      padding-bottom: 8px;
-      text-align: center;
+    .gallery img:hover {
+      transform: scale(1.03);
     }
 
-    .footer {
+    /* ================= VIDEO ================= */
+    .video-wrapper {
+      max-width: 720px;
+      margin: 0 auto;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px var(--shadow);
+    }
+
+    .video-wrapper iframe {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: none;
+    }
+
+    /* ================= GAME ================= */
+    #game-wrapper {
       text-align: center;
+      margin-top: 30px;
+    }
+
+    #startScreen {
+      background: var(--card);
       padding: 20px;
-      font-size: 0.9rem;
-      color: #666;
-      margin-top: 40px;
-    }
-
-    .top-logo {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      z-index: 999;
-    }
-
-    .top-logo img {
-      height: 60px;
-      width: auto;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+      border-radius: 12px;
+      display: inline-block;
+      box-shadow: 0 4px 12px var(--shadow);
     }
 
     #game-container {
       width: 400px;
       height: 600px;
-      background: #eee;
-      margin: 20px auto 40px;
-      position: relative;
+      margin: 20px auto;
+      background: #e9e9e9;
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      display: none;
+      box-shadow: 0 4px 15px var(--shadow);
+      position: relative;
     }
 
     #player {
-      width: 60px;
-      height: 60px;
-      background: #222;
-      border-radius: 50%;
+      width: 80px;
+      height: 40px;
+      background: linear-gradient(#444, #222);
+      border-radius: 12px;
       position: absolute;
       bottom: 10px;
-      left: 170px;
+      left: 160px;
     }
 
     .beer-can {
-      width: 40px;
-      height: 60px;
-      background: gold;
-      border: 3px solid #8a6b00;
+      width: 45px;
+      height: 70px;
+      background: linear-gradient(#ffe29a, #ffb341);
+      border: 2px solid #d89023;
       border-radius: 6px;
       position: absolute;
-      top: -60px;
+      top: -70px;
     }
 
     #score {
       position: absolute;
       top: 10px;
       left: 10px;
-      font-weight: bold;
+      font-weight: 700;
       font-size: 1.1rem;
-      color: #333;
     }
 
+    /* ================= CARDS ================= */
+    #leaderboard-list div,
     #comments-list div {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
+      background: var(--card);
+      padding: 14px;
+      margin: 12px auto;
+      max-width: 500px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px var(--shadow);
+    }
+
+    .comment-name {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+      font-size: 0.9rem;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 900px) {
+      .gallery {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .hero h1 {
+        font-size: 2.4rem;
+      }
+      .hero p {
+        font-size: 1.1rem;
+      }
     }
   </style>
 </head>
 <body>
 
-<div class="top-logo">
-  <img src="bindaybrewing1.jpg" alt="Bin Day Brewing Logo">
-</div>
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <h1>Bin Day Brewing</h1>
+  <p>A tribute to Robbie Knox’s passion project</p>
 
-<header class="header">
-  <h1>In Memory of BIN DAY BREWING</h1>
-  <p>Founded by Robbie Knox — A passion project to be remembered</p>
-</header>
+  <div class="socials">
+    <a href="https://www.youtube.com/@RobbieKnox" target="_blank">📺</a>
+    <a href="https://www.instagram.com/robbieknox/" target="_blank">📸</a>
+  </div>
+</section>
 
 <div class="container">
 
-  <section class="gallery">
-    <img src="bindaybrewing.jpg" alt="Bin Day Brewing Logo">
-    <img src="bindayglass.jpg" alt="Bin Day Brewing glass">
-    <img src="rollwithit.jpg" alt="Roll With It beer">
-    <img src="themockup.jpg" alt="Can mockup artwork">
-  </section>
+  <!-- ================= ABOUT ================= -->
+  <h2 class="section-title">About Bin Day Brewing</h2>
+  <p>
+    Bin Day Brewing began as a lockdown homebrew experiment between Robbie Knox and a friend. It grew into a quirky, memorable, small-batch brewery that resonated deeply with fans.
+  </p>
+  <p>
+    Although the brewery has closed, the charm, humour, and community spirit behind it continue to inspire. This site stands as a fan tribute.
+  </p>
 
-  <section class="bio">
-    <h2>About Bin Day Brewing</h2>
-    <p>
-      Bin Day Brewing began as a humble lockdown-era project between Robbie Knox and a friend —
-      starting from beer kits brewed at home and eventually growing into an official business.
-    </p>
-    <p>
-      Their vision was simple: craft beers made with passion, humour, and heart.
-      Though the brewery has since closed, what it represented deserves a legacy.
-    </p>
-  </section>
+  <!-- ================= GALLERY ================= -->
+  <h2 class="section-title">Gallery</h2>
 
-  <section class="tribute">
-    <h2>Remembering the Spirit</h2>
-    <p>
-      For many, Bin Day Brewing wasn’t just a beer brand — it was a spark during difficult times,
-      an idea that made people smile, and a project that captured imagination.
-    </p>
-    <p>I was too young to try it myself, but I wish I could've.</p>
-    <p><em>“Gone, but not forgotten.”</em></p>
-  </section>
+  <div class="gallery">
+    <img src="bindaybrewing.jpg" alt="">
+    <img src="bindayglass.jpg" alt="">
+    <img src="rollwithit.jpg" alt="">
+    <img src="themockup.jpg" alt="">
+  </div>
 
-  <!-- GAME WITH PAUSE BUTTON -->
-  <section id="game-section">
-    <h2 style="text-align:center;">
-      Catch the Beer Cans
-      <button id="pauseBtn"
-        style="margin-left:10px;padding:6px 14px;font-size:0.9rem;cursor:pointer;">
-        Pause
-      </button>
-    </h2>
+  <!-- ================= VIDEO ================= -->
+  <h2 class="section-title">Featured Video</h2>
+
+  <div class="video-wrapper">
+    <iframe
+      src="https://www.youtube-nocookie.com/embed/8tvlnDirom0"
+      allowfullscreen>
+    </iframe>
+  </div>
+
+  <!-- ================= GAME ================= -->
+  <h2 class="section-title">Catch the Beer Cans</h2>
+
+  <div id="game-wrapper">
+    <div id="startScreen">
+      <h3>Ready to play?</h3>
+      <button onclick="startGame()" style="padding:10px 25px;">Start Game</button>
+    </div>
 
     <div id="game-container">
       <div id="player"></div>
       <div id="score">Score: 0</div>
     </div>
-  </section>
+  </div>
 
-  <section id="leaderboard-section">
-    <h2>Global Leaderboard</h2>
-    <div id="leaderboard-list" style="max-width:400px;margin:0 auto;text-align:center;">
-      Loading leaderboard...
-    </div>
-  </section>
+  <!-- ================= LEADERBOARD ================= -->
+  <h2 class="section-title">Leaderboard</h2>
+  <div id="leaderboard-list">Loading...</div>
 
-  <section id="comments-section">
-    <h2>Community Comments</h2>
+  <!-- ================= COMMENTS ================= -->
+  <h2 class="section-title">Community Comments</h2>
 
-    <div style="max-width:600px;margin:20px auto;text-align:center;">
-      <input id="comment-name" placeholder="Your name"
-             style="padding:10px;width:45%;margin:5px;">
-      <input id="comment-text" placeholder="Your comment..."
-             style="padding:10px;width:45%;margin:5px;">
-      <button onclick="submitComment()"
-              style="padding:10px 20px;margin-top:10px;">Post</button>
-    </div>
+  <div style="max-width:600px;margin:0 auto;text-align:center;">
+    <input id="comment-name" placeholder="Your name"
+      style="padding:10px;width:45%;margin:5px;border-radius:6px;border:1px solid #ccc;">
+    <input id="comment-text" placeholder="Your comment..."
+      style="padding:10px;width:45%;margin:5px;border-radius:6px;border:1px solid #ccc;">
+    <button onclick="submitComment()"
+      style="padding:10px 20px;background:var(--accent);border:none;border-radius:6px;color:white;font-weight:600;">
+      Post
+    </button>
+  </div>
 
-    <div id="comments-list"
-         style="max-width:600px;margin:20px auto;padding:10px;background:#fff;
-                border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-      Loading comments...
-    </div>
-  </section>
+  <div id="comments-list" style="max-width:600px;margin:20px auto;"></div>
 
 </div>
 
-<footer class="footer">
-  This tribute page was created in appreciation of Bin Day Brewing and the impact it had.
+<footer>
+  This website is a fan-made tribute and is not affiliated with Bin Day Brewing or Robbie Knox.
 </footer>
 
 <script>
-/* Firebase config */
+/* ================ FIREBASE CONFIG ================ */
 const firebaseConfig = {
   apiKey: "AIzaSyAumyoE9xkHP6ybY0O_52-O8Ro7OBbHjtg",
   authDomain: "bin-day-brewing.firebaseapp.com",
@@ -250,130 +314,98 @@ const firebaseConfig = {
   messagingSenderId: "540124499398",
   appId: "1:540124499398:web:9f053c28d0d4d7df9c36c7"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-/* ==== GAME VARIABLES ==== */
-let player = null;
-let playerX = 170;
-let score = 0;
-let paused = false;
+/* ================ GAME LOGIC ================ */
+let player, playerX = 160, score = 0;
 
-/* ==== START GAME ==== */
 function startGame() {
+  document.getElementById("startScreen").style.display = "none";
+  document.getElementById("game-container").style.display = "block";
   player = document.getElementById("player");
   document.addEventListener("keydown", movePlayer);
-  spawnBeerCan();
+  spawnCan();
 }
 
-/* ==== PAUSE ==== */
-document.getElementById("pauseBtn").onclick = function () {
-  paused = !paused;
-  this.innerText = paused ? "Resume" : "Pause";
-};
-
 function movePlayer(e) {
-  if (paused) return;
-
-  const speed = 20;
-  if (e.key === "ArrowLeft" || e.key === "a") playerX -= speed;
-  if (e.key === "ArrowRight" || e.key === "d") playerX += speed;
-
-  playerX = Math.max(0, Math.min(340, playerX));
+  if (e.key === "ArrowLeft" || e.key === "a") playerX -= 20;
+  if (e.key === "ArrowRight" || e.key === "d") playerX += 20;
+  playerX = Math.max(0, Math.min(320, playerX));
   player.style.left = playerX + "px";
 }
 
-/* ==== FALLING CAN ==== */
-function spawnBeerCan() {
+function spawnCan() {
   const container = document.getElementById("game-container");
   const can = document.createElement("div");
   can.classList.add("beer-can");
-  can.style.left = Math.floor(Math.random() * 350) + "px";
+  can.style.left = Math.floor(Math.random() * 340) + "px";
   container.appendChild(can);
 
-  let canY = -60;
-  const fallSpeed = 3;
+  let y = -70;
+  let speed = 3 + score * 0.15;
 
-  const fallInterval = setInterval(() => {
-    if (paused) return;
+  const interval = setInterval(() => {
+    y += speed;
+    can.style.top = y + "px";
 
-    canY += fallSpeed;
-    can.style.top = canY + "px";
-
-    if (canY > 530) {
+    if (y > 530) {
       const canX = parseInt(can.style.left);
 
-      if (Math.abs(canX - playerX) < 50) {
+      if (Math.abs(canX - playerX) < 60) {
         score++;
         document.getElementById("score").innerText = "Score: " + score;
+        clearInterval(interval);
         can.remove();
-        clearInterval(fallInterval);
-        spawnBeerCan();
+        spawnCan();
       } else {
-        clearInterval(fallInterval);
-        can.style.background = "red";
-        finishGame();
+        clearInterval(interval);
+        can.remove();
+        endGame();
       }
     }
-  }, 10);
+  }, 12);
 }
 
-/* ==== GAME OVER ==== */
-function finishGame() {
-  let name = prompt("Game Over! Score: " + score + "\nEnter your name:");
-  if (!name) name = "Anonymous";
+function endGame() {
+  const name = prompt(`Game Over! Score: ${score}\nEnter your name:`) || "Anonymous";
 
-  saveScore(name, score);
+  db.ref("leaderboard").push({
+    name: name,
+    score: score,
+    timestamp: Date.now()
+  });
 
   score = 0;
   document.getElementById("score").innerText = "Score: 0";
-
   document.querySelectorAll(".beer-can").forEach(e => e.remove());
-  setTimeout(spawnBeerCan, 500);
+
+  document.getElementById("game-container").style.display = "none";
+  document.getElementById("startScreen").style.display = "inline-block";
 }
 
-/* ==== FIXED SAVE (FORCES NUMBER) ==== */
-function saveScore(name, score) {
-  db.ref("leaderboard").push({
-    name: name,
-    score: Number(score),
-    timestamp: Date.now()
-  });
-}
-
-/* ==== FIXED LOAD (MANUAL SORTING) ==== */
+/* ================ LEADERBOARD ================ */
 function loadLeaderboard() {
   db.ref("leaderboard").on("value", snap => {
+    let arr = [];
+    snap.forEach(s => arr.push(s.val()));
+    arr.sort((a, b) => b.score - a.score);
+    arr = arr.slice(0, 10);
 
-    let rows = [];
-    snap.forEach(child => rows.push(child.val()));
-
-    // sort highest → lowest
-    rows.sort((a, b) => b.score - a.score);
-
-    // top 10
-    rows = rows.slice(0, 10);
-
-    let html = "<h3>Top 10 Scores</h3>";
-
-    rows.forEach(entry => {
-      html += `<div style="padding:6px;">${entry.name}: <b>${entry.score}</b></div>`;
+    let html = "";
+    arr.forEach(i => {
+      html += `<div>${i.name}: <b>${i.score}</b></div>`;
     });
 
     document.getElementById("leaderboard-list").innerHTML = html;
   });
 }
 
-/* ==== COMMENTS ==== */
+/* ================ COMMENTS ================ */
 function submitComment() {
   const name = document.getElementById("comment-name").value.trim();
   const text = document.getElementById("comment-text").value.trim();
-
-  if (!name || !text) {
-    alert("Please enter both name and comment!");
-    return;
-  }
+  if (!name || !text) return alert("Enter a name and a comment");
 
   db.ref("comments").push({
     name: name,
@@ -385,29 +417,24 @@ function submitComment() {
 }
 
 function loadComments() {
-  db.ref("comments")
-    .limitToLast(50)
-    .on("value", snap => {
-      let html = "";
-      snap.forEach(child => {
-        let c = child.val();
-        html += `
-          <div>
-            <b>${c.name}</b><br>
-            ${c.text}
-          </div>
-        `;
-      });
-      document.getElementById("comments-list").innerHTML = html;
+  db.ref("comments").on("value", snap => {
+    let html = "";
+    snap.forEach(c => {
+      const val = c.val();
+      html += `
+        <div>
+          <div class="comment-name">${val.name}</div>
+          <div>${val.text}</div>
+        </div>
+      `;
     });
+    document.getElementById("comments-list").innerHTML = html;
+  });
 }
 
-/* ==== INIT ==== */
-window.onload = function() {
-  startGame();
-  loadLeaderboard();
-  loadComments();
-};
+/* ================ INIT ================ */
+loadLeaderboard();
+loadComments();
 </script>
 
 </body>

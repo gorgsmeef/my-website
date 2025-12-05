@@ -571,21 +571,60 @@
     }
 
     /* =========== LEADERBOARD & COMMENTS =========== */
-    #leaderboard-list,
-    #comments-list {
-      margin-top: 20px;
-    }
+    /* LEADERBOARD & COMMENTS */
+#leaderboard-list {
+  margin-top: 20px;
+}
 
-    .entry-card,
-    .comment-card {
-      background: var(--card);
-      padding: 16px 18px;
-      margin: 12px auto;
-      max-width: 520px;
-      border-radius: var(--radius-lg);
-      box-shadow: 0 3px 10px var(--shadow);
-      text-align: left;
-    }
+/* 3-wide comments grid */
+#comments-list {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* Card styling shared by leaderboard + comments */
+.entry-card,
+.comment-card {
+  background: var(--card);
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 3px 10px var(--shadow);
+  text-align: left;
+}
+
+/* Leaderboard still centered, single column */
+.entry-card {
+  margin: 12px auto;
+  max-width: 520px;
+}
+
+/* Comments fill their grid cells */
+.comment-card {
+  margin: 0;
+  width: 100%;
+}
+
+/* Empty state text centred across the grid */
+#comments-list .empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+}
+
+/* Responsive: 2-wide on tablets, 1-wide on phones */
+@media (max-width: 900px) {
+  #comments-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  #comments-list {
+    grid-template-columns: 1fr;
+  }
+}
+
 
     .leaderboard-entry-header {
       display: flex;
@@ -937,10 +976,23 @@
     </div>
   </main>
 
-  <footer>
+ <footer>
+  <p>
     This website is a fan-made tribute and is not affiliated with Bin Day
     Brewing Co. or Robbie Knox.
-  </footer>
+  </p>
+  <p>
+    Thanks for checking this out. Feel free to follow me if you like:
+    <a
+      href="https://www.instagram.com/gorgsmeef/"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      @gorgsmeef
+    </a>.
+  </p>
+</footer>
+
 
   <!-- Firebase + logic (modular SDK) -->
   <script type="module">
@@ -1390,5 +1442,6 @@
   </script>
 </body>
 </html>
+
 
 

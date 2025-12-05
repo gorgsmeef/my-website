@@ -958,15 +958,18 @@
     let commentsRef = null;
 
     try {
-      const firebaseConfig = {
-        apiKey: "AIzaSyAumyoE9xkHP6ybY0O_52-O8Ro7OBbHjtg",
-        authDomain: "bin-day-brewing.firebaseapp.com",
-        databaseURL: "https://bin-day-brewing-default-rtdb.firebaseio.com",
-        projectId: "bin-day-brewing",
-        storageBucket: "bin-day-brewing.firebasestorage.app",
-        messagingSenderId: "540124499398",
-        appId: "1:540124499398:web:9f053c28d0d4d7df9c36c7"
-      };
+     const firebaseConfig = {
+  apiKey: "AIzaSyAumyoE9xkHP6ybY0O_52-O8Ro7OBbHjtg",
+  authDomain: "bin-day-brewing.firebaseapp.com",
+  databaseURL: "https://bin-day-brewing-default-rtdb.firebaseio.com",
+  projectId: "bin-day-brewing",
+  storageBucket: "bin-day-brewing.firebasestorage.app",
+  messagingSenderId: "540124499398",
+  appId: "1:540124499398:web:9f053c28d0d4d7df9c36c7"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 
       if (window.firebase && !firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
@@ -1372,3 +1375,4 @@
   </script>
 </body>
 </html>
+

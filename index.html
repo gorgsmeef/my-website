@@ -16,10 +16,6 @@
     rel="stylesheet"
   />
 
-  <!-- Firebase (Compat) -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-
   <style>
     :root {
       --accent: #ffb341;
@@ -847,7 +843,6 @@
         </p>
 
         <div class="video-wrapper">
-          <!-- Standard YouTube embed (avoids some nocookie / configuration issues) -->
           <iframe
             src="https://www.youtube.com/embed/8tvlnDirom0"
             title="What happened to Bin Day Brewing?"
@@ -951,39 +946,80 @@
     Brewing Co. or Robbie Knox.
   </footer>
 
-  <script>
-    /* ================ FIREBASE CONFIG & SETUP ================ */
-    let db = null;
-    let leaderboardRef = null;
-    let commentsRef = null;
+  <!-- Firebase + logic (modular SDK) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      push,
+      onValue,
+      query,
+      orderByChild,
+      limitToLast,
+      update,
+    } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-    try {
-     const firebaseConfig = {
-  apiKey: "AIzaSyAumyoE9xkHP6ybY0O_52-O8Ro7OBbHjtg",
-  authDomain: "bin-day-brewing.firebaseapp.com",
-  databaseURL: "https://bin-day-brewing-default-rtdb.firebaseio.com",
-  projectId: "bin-day-brewing",
-  storageBucket: "bin-day-brewing.firebasestorage.app",
-  messagingSenderId: "540124499398",
-  appId: "1:540124499398:web:9f053c28d0d4d7df9c36c7"
-};
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAumyoE9xkHP6ybY0O_52-O8Ro7OBbHjtg",
+      authDomain: "bin-day-brewing.firebaseapp.com",
+      databaseURL: "https://bin-day-brewing-default-rtdb.firebaseio.com",
+      projectId: "bin-day-brewing",
+      storageBucket: "bin-day-brewing.firebasestorage.app",
+      messagingSenderId: "540124499398",
+      appId: "1:540124499398:web:9f053c28d0d4d7df9c36c7",
+    };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const leaderboardRef = ref(db, "leaderboard");
+    const commentsRef = ref(db, "comments");
 
-      if (window.firebase && !firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-        db = firebase.database();
-        leaderboardRef = db.ref("leaderboard");
-        commentsRef = db.ref("comments");
+    // Fallback comments from your JSON export (used if DB is empty / errors)
+    const FALLBACK_COMMENTS = {
+      "-OfYO4ArU1I4B-C1ohAN": {
+        "name": "George",
+        "text": "I miss BDB every day...",
+        "timestamp": 1764751594155
+      },
+      "-Of_4tEhXza3EYz4x8Lo": {
+        "name": "SK",
+        "text": "I miss BDB every day.",
+        "timestamp": 1764780119116
+      },
+      "-OfdsfAWYiiqreodIcpb": {
+        "name": "Joseph",
+        "text": "RIP BINDAY",
+        "timestamp": 1764860539671
+      },
+      "-OfdyVejcvoahe_s17v4": {
+        "name": "Honey",
+        "text": "RIP Bin Day Brewing <3",
+        "timestamp": 1764862069255
+      },
+      "-OfeCccS17TOx4dKkq-6": {
+        "name": "SK",
+        "text": "The comment below isn’t what I commented",
+        "timestamp": 1764866034268
+      },
+      "-OfeN_A05I5Pj_fhLf4C": {
+        "name": "Lilia",
+        "text": "RIP bin day IPA, trying valencian tip run with my dad made for great memories 🫶😔",
+        "timestamp": 1764868904063
+      },
+      "-OfeSRO1XXZiIc1jfPNK": {
+        "name": "DWH",
+        "text": "Every day is bin day",
+        "timestamp": 1764870178466
+      },
+      "-Offr-cF-DFEpA53C-bx": {
+        "name": "JB",
+        "text": "I treasure my bin day brewing cups. Can’t wait to tell my future children the story of bin day and Robbie Knox!",
+        "timestamp": 1764893657709
       }
-    } catch (err) {
-      console.error("Error initialising Firebase:", err);
-    }
-
-    function firebaseReady() {
-      return !!(db && leaderboardRef && commentsRef);
-    }
+    };
 
     /* ================ UTILITIES ================ */
     function escapeHTML(str) {
@@ -1075,7 +1111,6 @@ const app = initializeApp(firebaseConfig);
       if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
         playerX += 20;
       }
-      // Constrain within game container width (400px)
       playerX = Math.max(0, Math.min(320, playerX));
       player.style.left = playerX + "px";
     }
@@ -1108,7 +1143,6 @@ const app = initializeApp(firebaseConfig);
           const canX = parseInt(can.style.left, 10);
 
           if (Math.abs(canX - playerX) < 60) {
-            // Caught
             score++;
             const scoreEl = document.getElementById("score");
             if (scoreEl) scoreEl.textContent = "Score: " + score;
@@ -1116,7 +1150,6 @@ const app = initializeApp(firebaseConfig);
             can.remove();
             spawnCan();
           } else {
-            // Missed
             clearInterval(interval);
             can.remove();
             endGame();
@@ -1125,7 +1158,7 @@ const app = initializeApp(firebaseConfig);
       }, 12);
     }
 
-    function endGame() {
+    async function endGame() {
       if (!isGameRunning) return;
       isGameRunning = false;
 
@@ -1144,21 +1177,21 @@ const app = initializeApp(firebaseConfig);
         cleanedName = rawName.trim().slice(0, 32);
       }
 
-      if (firebaseReady()) {
-        leaderboardRef.push({
+      try {
+        await push(leaderboardRef, {
           name: cleanedName,
           score: finalScore,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
-      } else {
+      } catch (err) {
+        console.error("Error saving score:", err);
         alert(
           "Your score was " +
             finalScore +
-            ".\nLeaderboard is currently unavailable (Firebase connection issue)."
+            ".\nLeaderboard entry could not be saved just now."
         );
       }
 
-      // Reset state
       score = 0;
       const scoreEl = document.getElementById("score");
       if (scoreEl) scoreEl.textContent = "Score: 0";
@@ -1172,74 +1205,150 @@ const app = initializeApp(firebaseConfig);
     }
 
     /* ================ LEADERBOARD ================ */
-    function loadLeaderboard() {
+    function renderLeaderboard(dataObj) {
       const list = document.getElementById("leaderboard-list");
       if (!list) return;
 
-      if (!firebaseReady()) {
+      const entries = Object.values(dataObj || {});
+      if (!entries.length) {
         list.className = "empty-state";
-        list.textContent =
-          "Leaderboard is currently unavailable (Firebase not connected).";
+        list.textContent = "No scores yet — be the first to play!";
         return;
       }
 
-      leaderboardRef.on("value", (snap) => {
-        if (!snap.exists()) {
-          list.className = "empty-state";
-          list.textContent =
-            "No scores yet — be the first to play!";
-          return;
-        }
+      entries.sort((a, b) => (b.score || 0) - (a.score || 0));
+      const topTen = entries.slice(0, 10);
 
-        const entries = [];
-        snap.forEach((s) => entries.push(s.val()));
+      let html = "";
+      topTen.forEach((entry, index) => {
+        const safeName = escapeHTML(entry.name || "Anonymous");
+        const scoreText = typeof entry.score === "number" ? entry.score : 0;
+        const dateText = formatDate(entry.timestamp);
 
-        entries.sort((a, b) => (b.score || 0) - (a.score || 0));
-        const topTen = entries.slice(0, 10);
-
-        if (!topTen.length) {
-          list.className = "empty-state";
-          list.textContent =
-            "No scores yet — be the first to play!";
-          return;
-        }
-
-        let html = "";
-        topTen.forEach((entry, index) => {
-          const safeName = escapeHTML(entry.name || "Anonymous");
-          const scoreText = typeof entry.score === "number" ? entry.score : 0;
-          const dateText = formatDate(entry.timestamp);
-
-          html += `
-            <div class="entry-card">
-              <div class="leaderboard-entry-header">
-                <span class="leaderboard-rank">#${index + 1}</span>
-                <span class="leaderboard-name">${safeName}</span>
-                <span class="leaderboard-score">${scoreText}</span>
-              </div>
-              ${
-                dateText
-                  ? `<div class="entry-meta">Scored on ${escapeHTML(
-                      dateText
-                    )}</div>`
-                  : ""
-              }
+        html += `
+          <div class="entry-card">
+            <div class="leaderboard-entry-header">
+              <span class="leaderboard-rank">#${index + 1}</span>
+              <span class="leaderboard-name">${safeName}</span>
+              <span class="leaderboard-score">${scoreText}</span>
             </div>
-          `;
-        });
-
-        list.className = "";
-        list.innerHTML = html;
-      }, (err) => {
-        console.error("Error loading leaderboard:", err);
-        list.className = "empty-state";
-        list.textContent =
-          "Unable to load leaderboard right now.";
+            ${
+              dateText
+                ? `<div class="entry-meta">Scored on ${escapeHTML(
+                    dateText
+                  )}</div>`
+                : ""
+            }
+          </div>
+        `;
       });
+
+      list.className = "";
+      list.innerHTML = html;
+    }
+
+    function watchLeaderboard() {
+      const list = document.getElementById("leaderboard-list");
+      if (!list) return;
+
+      const q = query(leaderboardRef);
+      onValue(
+        q,
+        (snapshot) => {
+          if (snapshot.exists()) {
+            renderLeaderboard(snapshot.val());
+          } else {
+            renderLeaderboard({});
+          }
+        },
+        (err) => {
+          console.error("Error loading leaderboard:", err);
+          list.className = "empty-state";
+          list.textContent = "Unable to load leaderboard right now.";
+        }
+      );
     }
 
     /* ================ COMMENTS ================ */
-    function submitComment() {
+    function renderCommentsFromObject(obj) {
+      const container = document.getElementById("comments-list");
+      if (!container) return;
+
+      const items = Object.values(obj || {});
+      if (!items.length) {
+        container.innerHTML =
+          '<div class="empty-state">No comments yet — share your thoughts above.</div>';
+        return;
+      }
+
+      items.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+      let html = "";
+      items.forEach((val) => {
+        const safeName = escapeHTML(val.name || "Anonymous");
+        const safeText = escapeHTML(val.text || "").replace(/\n/g, "<br>");
+        const dateText = formatDate(val.timestamp);
+
+        html += `
+          <div class="comment-card">
+            <div class="comment-name">${safeName}</div>
+            <div class="comment-text">${safeText}</div>
+            ${
+              dateText
+                ? `<div class="entry-meta">Posted on ${escapeHTML(
+                    dateText
+                  )}</div>`
+                : ""
+            }
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    let commentsSeeded = false;
+
+    function watchComments() {
+      const container = document.getElementById("comments-list");
+      if (!container) return;
+
+      const commentsQuery = query(
+        commentsRef,
+        orderByChild("timestamp"),
+        limitToLast(50)
+      );
+
+      onValue(
+        commentsQuery,
+        async (snapshot) => {
+          if (snapshot.exists()) {
+            renderCommentsFromObject(snapshot.val());
+          } else if (
+            !commentsSeeded &&
+            FALLBACK_COMMENTS &&
+            Object.keys(FALLBACK_COMMENTS).length
+          ) {
+            commentsSeeded = true;
+            try {
+              await update(ref(db, "comments"), FALLBACK_COMMENTS);
+            } catch (e) {
+              console.error("Error seeding comments:", e);
+            }
+            renderCommentsFromObject(FALLBACK_COMMENTS);
+          } else {
+            renderCommentsFromObject({});
+          }
+        },
+        (err) => {
+          console.error("Error loading comments:", err);
+          renderCommentsFromObject(FALLBACK_COMMENTS);
+        }
+      );
+    }
+
+    async function submitComment(event) {
+      event.preventDefault();
       const nameEl = document.getElementById("comment-name");
       const textEl = document.getElementById("comment-text");
       if (!nameEl || !textEl) return;
@@ -1252,83 +1361,20 @@ const app = initializeApp(firebaseConfig);
         return;
       }
 
-      if (!firebaseReady()) {
-        alert(
-          "Comments are currently unavailable (Firebase connection issue)."
-        );
-        return;
-      }
-
       const safeName = name.slice(0, 40);
       const safeText = text.slice(0, 300);
 
-      commentsRef.push({
-        name: safeName,
-        text: safeText,
-        timestamp: Date.now()
-      });
-
-      textEl.value = "";
-    }
-
-    function loadComments() {
-      const container = document.getElementById("comments-list");
-      if (!container) return;
-
-      if (!firebaseReady()) {
-        container.innerHTML =
-          '<div class="empty-state">Comments are currently unavailable (Firebase not connected).</div>';
-        return;
+      try {
+        await push(commentsRef, {
+          name: safeName,
+          text: safeText,
+          timestamp: Date.now(),
+        });
+        textEl.value = "";
+      } catch (err) {
+        console.error("Error saving comment:", err);
+        alert("Could not save your comment just now. Please try again later.");
       }
-
-      commentsRef
-        .orderByChild("timestamp")
-        .limitToLast(50)
-        .on(
-          "value",
-          (snap) => {
-            if (!snap.exists()) {
-              container.innerHTML =
-                '<div class="empty-state">No comments yet — share your thoughts above.</div>';
-              return;
-            }
-
-            const comments = [];
-            snap.forEach((c) => comments.push(c.val()));
-            comments.reverse(); // Newest first
-
-            let html = "";
-            comments.forEach((val) => {
-              const safeName = escapeHTML(val.name || "Anonymous");
-              const safeText = escapeHTML(val.text || "").replace(
-                /\n/g,
-                "<br>"
-              );
-              const dateText = formatDate(val.timestamp);
-
-              html += `
-                <div class="comment-card">
-                  <div class="comment-name">${safeName}</div>
-                  <div class="comment-text">${safeText}</div>
-                  ${
-                    dateText
-                      ? `<div class="entry-meta">Posted on ${escapeHTML(
-                          dateText
-                        )}</div>`
-                      : ""
-                  }
-                </div>
-              `;
-            });
-
-            container.innerHTML = html;
-          },
-          (err) => {
-            console.error("Error loading comments:", err);
-            container.innerHTML =
-              '<div class="empty-state">Unable to load comments right now.</div>';
-          }
-        );
     }
 
     /* ================ INIT ================ */
@@ -1339,40 +1385,12 @@ const app = initializeApp(firebaseConfig);
 
     const commentForm = document.getElementById("comment-form");
     if (commentForm) {
-      commentForm.addEventListener("submit", function (event) {
-        event.preventDefault();
-        submitComment();
-      });
-    }
-
-    // Try to load Firebase-dependent sections
-    if (firebaseReady()) {
-      loadLeaderboard();
-      loadComments();
-    } else {
-      // If Firebase initialises slightly later for any reason, try again once
-      setTimeout(() => {
-        if (firebaseReady()) {
-          loadLeaderboard();
-          loadComments();
-        } else {
-          const lb = document.getElementById("leaderboard-list");
-          if (lb) {
-            lb.className = "empty-state";
-            lb.textContent =
-              "Leaderboard is currently unavailable (Firebase not connected).";
-          }
-          const commentsList = document.getElementById("comments-list");
-          if (commentsList) {
-            commentsList.innerHTML =
-              '<div class="empty-state">Comments are currently unavailable (Firebase not connected).</div>';
-          }
-        }
-      }, 1500);
+      commentForm.addEventListener("submit", submitComment);
     }
 
     initBestScore();
+    watchLeaderboard();
+    watchComments();
   </script>
 </body>
 </html>
-

@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bin Day Brewing — Fan Tribute</title>
+  <meta
+    name="description"
+    content="A fan-made tribute to Bin Day Brewing Co., the small-batch brewery created by Robbie Knox and Mike Millar."
+  />
+  <link rel="icon" href="favicon.ico" />
+
+  <!-- Inter Font -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Firebase (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --accent: #ffb341;
+      --accent-soft: rgba(255, 179, 65, 0.18);
+      --text: #222;
+      --muted: #666;
+      --bg: #f8f8f8;
+      --card: #ffffff;
+      --shadow: rgba(0, 0, 0, 0.12);
+      --radius-lg: 14px;
+      --radius-pill: 999px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+    /* =========== ACCESSIBILITY =========== */
+    .skip-link {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: -40px;
+      padding: 8px 14px;
+      background: #000;
+      color: #fff;
+      border-radius: var(--radius-pill);
+      font-size: 0.85rem;
+      text-decoration: none;
+      z-index: 1000;
+      transition: top 0.2s ease;
+    }
+
+    .skip-link:focus {
+      top: 10px;
+    }
+
+    /* =========== HEADER & NAV =========== */
+    .site-header {
+      position: relative;
+    }
+
+    .top-nav {
+      position: fixed;
+      inset-inline: 0;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 24px;
+      z-index: 20;
+      font-size: 0.95rem;
+      background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.6),
+        rgba(0, 0, 0, 0)
+      );
+    }
+
+    .logo {
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      padding: 6px 14px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      background: rgba(0, 0, 0, 0.5);
+      color: #fff;
+      text-decoration: none;
+      backdrop-filter: blur(4px);
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 16px;
+      padding: 0;
+      margin: 0;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      font-weight: 500;
+      color: #fff;
+      opacity: 0.9;
+      padding: 6px 10px;
+      border-radius: var(--radius-pill);
+      transition: background 0.15s ease, opacity 0.15s ease, transform 0.1s ease;
+    }
+
+    .nav-links a:hover,
+    .nav-links a:focus-visible {
+      background: rgba(0, 0, 0, 0.45);
+      opacity: 1;
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 720px) {
+      .top-nav {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .nav-links {
+        flex-wrap: wrap;
+      }
+    }
+
+    /* =========== HERO =========== */
+    .hero {
+      background: url("bindayheader.jpg") center/cover no-repeat;
+      min-height: 80vh;
+      padding: 140px 20px 120px;
+      color: white;
+      box-shadow: inset 0 0 0 2000px rgba(0, 0, 0, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: var(--radius-pill);
+      background: rgba(0, 0, 0, 0.6);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 18px;
+    }
+
+    .hero-badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 4vw + 1.4rem, 3.9rem);
+      font-weight: 700;
+      margin: 0 0 10px;
+    }
+
+    .hero p {
+      margin: 0;
+    }
+
+    .hero-tagline {
+      font-size: clamp(1.1rem, 1.3vw + 0.9rem, 1.6rem);
+      opacity: 0.92;
+      margin-bottom: 12px;
+    }
+
+    .hero-subtitle {
+      max-width: 640px;
+      margin: 0 auto 22px;
+      font-size: 0.98rem;
+      opacity: 0.9;
+    }
+
+    .socials {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 22px;
+      flex-wrap: wrap;
+    }
+
+    .social-link {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.8rem;
+      text-decoration: none;
+      color: #fff;
+      opacity: 0.9;
+      transition: transform 0.15s ease, opacity 0.15s ease, color 0.15s ease;
+    }
+
+    .social-link svg {
+      width: 40px;
+      height: 40px;
+    }
+
+    .social-link:hover,
+    .social-link:focus-visible {
+      transform: translateY(-2px);
+      opacity: 1;
+      color: var(--accent);
+    }
+
+    /* =========== LAYOUT =========== */
+    main {
+      padding-bottom: 40px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    h2.section-title {
+      text-align: center;
+      font-size: 2.1rem;
+      font-weight: 700;
+      margin: 60px 0 10px;
+      position: relative;
+    }
+
+    h2.section-title::after {
+      content: "";
+      display: block;
+      width: 100px;
+      height: 4px;
+      background: var(--accent);
+      margin: 12px auto 0;
+      border-radius: 2px;
+    }
+
+    .section-intro {
+      max-width: 720px;
+      margin: 0 auto 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 3px 12px var(--shadow);
+      padding: 18px 20px;
+      margin: 20px 0;
+    }
+
+    .card.highlight {
+      border-left: 4px solid var(--accent);
+      background: linear-gradient(
+        135deg,
+        rgba(255, 179, 65, 0.08),
+        rgba(255, 255, 255, 1)
+      );
+    }
+
+    /* =========== BUTTONS & INPUTS =========== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 24px;
+      border-radius: var(--radius-pill);
+      border: none;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease,
+        color 0.15s ease;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+      background: #ececec;
+      color: var(--text);
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #402600;
+    }
+
+    .btn:hover,
+    .btn:focus-visible {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .input,
+    .textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease,
+        background-color 0.15s ease;
+      background: #fff;
+    }
+
+    .input:focus,
+    .textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+      background: #fffdf7;
+    }
+
+    .field-label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-align: left;
+    }
+
+    /* =========== ABOUT =========== */
+    .about-text {
+      max-width: 760px;
+      margin: 0 auto;
+      font-size: 0.98rem;
+    }
+
+    .about-text p {
+      margin-bottom: 12px;
+    }
+
+    .about-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .meta-item {
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      padding: 12px 14px;
+      box-shadow: 0 2px 8px var(--shadow);
+      font-size: 0.9rem;
+    }
+
+    .meta-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+
+    .meta-value {
+      font-weight: 600;
+    }
+
+    @media (max-width: 720px) {
+      .about-meta {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* =========== GALLERY =========== */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 30px;
+    }
+
+    .gallery-item {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px var(--shadow);
+      background: #ddd;
+      position: relative;
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      transform: scale(1.02);
+      transition: transform 0.25s ease;
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.05);
+    }
+
+    .gallery-caption {
+      position: absolute;
+      left: 10px;
+      bottom: 10px;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      font-size: 0.75rem;
+      backdrop-filter: blur(4px);
+    }
+
+    @media (max-width: 900px) {
+      .gallery {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 540px) {
+      .gallery {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* =========== VIDEO =========== */
+    .video-wrapper {
+      max-width: 720px;
+      margin: 20px auto 0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px var(--shadow);
+      background: #000;
+      position: relative;
+    }
+
+    .video-wrapper iframe {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: none;
+      display: block;
+    }
+
+    .video-fallback {
+      padding: 12px 14px 14px;
+      font-size: 0.9rem;
+      color: #eee;
+      background: #111;
+    }
+
+    .video-fallback a {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* =========== GAME =========== */
+    #game-wrapper {
+      text-align: center;
+      margin-top: 24px;
+    }
+
+    .game-description {
+      font-size: 0.9rem;
+      color: var(--muted);
+      max-width: 480px;
+      margin: 0 auto 10px;
+    }
+
+    #startScreen {
+      background: var(--card);
+      padding: 20px;
+      border-radius: var(--radius-lg);
+      display: inline-block;
+      box-shadow: 0 4px 12px var(--shadow);
+      margin-top: 10px;
+    }
+
+    #game-container {
+      width: 400px;
+      height: 600px;
+      margin: 20px auto;
+      background: #e9e9e9;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: none;
+      box-shadow: 0 4px 15px var(--shadow);
+      position: relative;
+    }
+
+    #player {
+      width: 80px;
+      height: 40px;
+      background: linear-gradient(#444, #222);
+      border-radius: 12px;
+      position: absolute;
+      bottom: 10px;
+      left: 160px;
+    }
+
+    .beer-can {
+      width: 45px;
+      height: 70px;
+      background: linear-gradient(#ffe29a, #ffb341);
+      border: 2px solid #d89023;
+      border-radius: 6px;
+      position: absolute;
+      top: -70px;
+    }
+
+    #score,
+    #best-score {
+      position: absolute;
+      top: 10px;
+      font-weight: 700;
+      font-size: 0.98rem;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    #score {
+      left: 10px;
+    }
+
+    #best-score {
+      right: 10px;
+    }
+
+    .game-tip {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* =========== LEADERBOARD & COMMENTS =========== */
+    #leaderboard-list,
+    #comments-list {
+      margin-top: 20px;
+    }
+
+    .entry-card,
+    .comment-card {
+      background: var(--card);
+      padding: 16px 18px;
+      margin: 12px auto;
+      max-width: 520px;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 3px 10px var(--shadow);
+      text-align: left;
+    }
+
+    .leaderboard-entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .leaderboard-rank {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+
+    .leaderboard-name {
+      font-weight: 600;
+      flex: 1;
+    }
+
+    .leaderboard-score {
+      font-weight: 700;
+    }
+
+    .entry-meta {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .comment-name {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .comment-text {
+      font-size: 0.95rem;
+      margin-top: 2px;
+    }
+
+    .empty-state {
+      font-size: 0.9rem;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .comment-form {
+      max-width: 620px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 620px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* =========== FOOTER =========== */
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #888;
+      font-size: 0.9rem;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  <header class="site-header">
+    <nav class="top-nav" aria-label="Primary">
+      <a href="#top" class="logo">Bin Day Brewing</a>
+      <ul class="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#gallery">Gallery</a></li>
+        <li><a href="#video">Story</a></li>
+        <li><a href="#game">Game</a></li>
+        <li><a href="#leaderboard">Leaderboard</a></li>
+        <li><a href="#comments">Comments</a></li>
+      </ul>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero-inner">
+        <div class="hero-badge">
+          <span class="hero-badge-dot"></span>
+          <span>Fan Tribute Project</span>
+        </div>
+
+        <h1 id="hero-title">In Memory of Bin Day Brewing</h1>
+        <p class="hero-tagline">A small brewery with a big community heart.</p>
+        <p class="hero-subtitle">
+          Born in lockdown from the minds of Robbie Knox and Mike Millar, Bin Day
+          Brewing Co. became a beloved passion project for fans of beer, YouTube,
+          and daft ideas that somehow work.
+        </p>
+
+        <div class="socials">
+          <a
+            href="https://www.youtube.com/@RobbieKnox"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="social-link"
+            aria-label="Visit Robbie Knox on YouTube"
+          >
+            <!-- YouTube SVG -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+              <path
+                d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.5 12 3.5 12 3.5s-7.505 0-9.376.55A3.016 3.016 0 0 0 .502 6.186 31.578 31.578 0 0 0 0 12a31.578 31.578 0 0 0 .502 5.814 3.016 3.016 0 0 0 2.122 2.136C4.495 20.5 12 20.5 12 20.5s7.505 0 9.376-.55a3.016 3.016 0 0 0 2.122-2.136A31.578 31.578 0 0 0 24 12a31.578 31.578 0 0 0-.502-5.814zM9.75 15.568V8.432L15.818 12 9.75 15.568z"
+              />
+            </svg>
+            <span>YouTube</span>
+          </a>
+
+          <a
+            href="https://www.instagram.com/megarobbie/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="social-link"
+            aria-label="Visit Robbie Knox on Instagram"
+          >
+            <!-- Instagram SVG -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+              <path
+                d="M7 2C4.243 2 2 4.243 2 7v10c0 2.757 2.243 5 5 5h10c2.757 0 5-2.243 5-5V7c0-2.757-2.243-5-5-5H7zm10 2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h10zm-5 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm4.5-.75a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5z"
+              />
+            </svg>
+            <span>Instagram</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </header>
+
+  <main id="main">
+    <div class="container">
+      <!-- ABOUT -->
+      <section id="about" aria-labelledby="about-title">
+        <h2 class="section-title" id="about-title">About Bin Day Brewing</h2>
+        <p class="section-intro">
+          A tiny brewery with a sense of humour and a loyal following. This page
+          is a fan-made tribute to that brief but brilliant experiment.
+        </p>
+
+        <div class="about-text">
+          <p>
+            Bin Day Brewing began as a lockdown homebrew adventure between
+            <strong>Robbie Knox</strong> and <strong>Mike Millar</strong>. What
+            started as an experiment quickly grew into a quirky small-batch
+            brewery that was warmly received by fans.
+          </p>
+          <p>
+            As life opened up again and both Robbie and Mike became busier, it
+            became harder to give the brewery the time and love it deserved. In
+            the end, the difficult decision was made to put Bin Day Brewing on
+            ice for the foreseeable future.
+          </p>
+          <p>
+            Even though the brewery has closed, its charm, the artwork, the
+            daft ideas, and the community spirit around it still mean a lot to
+            people. This site is just a little thank-you note in website form.
+          </p>
+          <div class="card highlight">
+            <p style="margin: 0;">
+              Personally, I never actually got to try the beer — not for moral
+              reasons, I just didn’t like beer yet. Now that I do, I’m oddly
+              gutted I’ll never get to crack open an official Bin Day brew.
+            </p>
+          </div>
+
+          <div class="about-meta">
+            <div class="meta-item">
+              <div class="meta-label">Founders</div>
+              <div class="meta-value">Robbie Knox &amp; Mike Millar</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Origin</div>
+              <div class="meta-value">Lockdown passion project</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Status</div>
+              <div class="meta-value">On ice, remembered fondly</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- GALLERY -->
+      <section id="gallery" aria-labelledby="gallery-title">
+        <h2 class="section-title" id="gallery-title">Gallery</h2>
+        <p class="section-intro">
+          A few visuals to remember the branding, cans, and vibes of Bin Day
+          Brewing Co.
+        </p>
+
+        <div class="gallery">
+          <div class="gallery-item">
+            <img
+              src="bindaybrewing.jpg"
+              alt="Bin Day Brewing cans and branding"
+              loading="lazy"
+            />
+            <div class="gallery-caption">Bin Day Brewing line-up</div>
+          </div>
+          <div class="gallery-item">
+            <img
+              src="bindayglass.jpg"
+              alt="Bin Day Brewing branded glass of beer"
+              loading="lazy"
+            />
+            <div class="gallery-caption">The perfect pour</div>
+          </div>
+          <div class="gallery-item">
+            <img
+              src="rollwithit.jpg"
+              alt="Roll With It can design from Bin Day Brewing"
+              loading="lazy"
+            />
+            <div class="gallery-caption">Roll With It artwork</div>
+          </div>
+          <div class="gallery-item">
+            <img
+              src="themockup.jpg"
+              alt="Design mock-up for Bin Day Brewing packaging"
+              loading="lazy"
+            />
+            <div class="gallery-caption">Branding mock-up</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIDEO -->
+      <section id="video" aria-labelledby="video-title">
+        <h2 class="section-title" id="video-title">Featured Video</h2>
+        <p class="section-intro">
+          Hear about what happened to Bin Day Brewing in Robbie’s own words.
+        </p>
+
+        <div class="video-wrapper">
+          <!-- Standard YouTube embed (avoids some nocookie / configuration issues) -->
+          <iframe
+            src="https://www.youtube.com/embed/8tvlnDirom0"
+            title="What happened to Bin Day Brewing?"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+          <div class="video-fallback">
+            If you see an error above, you can
+            <a href="https://www.youtube.com/watch?v=8tvlnDirom0" target="_blank" rel="noopener noreferrer">
+              watch the video directly on YouTube
+            </a>.
+          </div>
+        </div>
+      </section>
+
+      <!-- GAME -->
+      <section id="game" aria-labelledby="game-title">
+        <h2 class="section-title" id="game-title">Catch the Beer Cans!</h2>
+        <p class="section-intro">
+          A simple little game inspired by Bin Day cans. No sticky floors, no
+          hangovers — just reflexes.
+        </p>
+
+        <div id="game-wrapper">
+          <p class="game-description">
+            Use the <strong>left/right arrow</strong> keys or
+            <strong>A / D</strong> to move the crate and catch as many cans as
+            you can. Miss one and it’s game over!
+          </p>
+
+          <div id="startScreen" aria-label="Start game panel">
+            <h3 style="margin-top: 0;">Ready to play?</h3>
+            <button id="start-game-btn" class="btn primary" type="button">
+              Start Game
+            </button>
+            <p class="game-tip">Tip: the cans fall faster as your score rises.</p>
+          </div>
+
+          <div id="game-container" aria-label="Bin Day Brewing mini game">
+            <div id="player" aria-hidden="true"></div>
+            <div id="score">Score: 0</div>
+            <div id="best-score">Best: 0</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LEADERBOARD -->
+      <section id="leaderboard" aria-labelledby="leaderboard-title">
+        <h2 class="section-title" id="leaderboard-title">Leaderboard</h2>
+        <p class="section-intro">
+          High scores from fellow Bin Day fans. Can you make it onto the list?
+        </p>
+
+        <div id="leaderboard-list" class="empty-state">Loading scores…</div>
+      </section>
+
+      <!-- COMMENTS -->
+      <section id="comments" aria-labelledby="comments-title">
+        <h2 class="section-title" id="comments-title">Community Comments</h2>
+        <p class="section-intro">
+          Share your memories, thoughts, or favourite Bin Day moments.
+        </p>
+
+        <form id="comment-form" class="comment-form" novalidate>
+          <div class="form-row">
+            <div>
+              <label class="field-label" for="comment-name">Name</label>
+              <input
+                id="comment-name"
+                class="input"
+                placeholder="Your name"
+                autocomplete="name"
+                maxlength="40"
+              />
+            </div>
+            <div>
+              <label class="field-label" for="comment-text">Comment</label>
+              <textarea
+                id="comment-text"
+                class="textarea"
+                placeholder="Your comment…"
+                rows="2"
+                maxlength="300"
+              ></textarea>
+            </div>
+          </div>
+          <button class="btn primary" type="submit">Post comment</button>
+          <p class="form-hint">
+            Your comment will appear below. Please be kind — this is a fan-made
+            tribute.
+          </p>
+        </form>
+
+        <div id="comments-list"></div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    This website is a fan-made tribute and is not affiliated with Bin Day
+    Brewing Co. or Robbie Knox.
+  </footer>
+
+  <script>
+    /* ================ FIREBASE CONFIG & SETUP ================ */
+    let db = null;
+    let leaderboardRef = null;
+    let commentsRef = null;
+
+    try {
+      const firebaseConfig = {
+        apiKey: "AIzaSyAumyoE9xkHP6ybY0O_52-O8Ro7OBbHjtg",
+        authDomain: "bin-day-brewing.firebaseapp.com",
+        databaseURL: "https://bin-day-brewing-default-rtdb.firebaseio.com",
+        projectId: "bin-day-brewing",
+        storageBucket: "bin-day-brewing.firebasestorage.app",
+        messagingSenderId: "540124499398",
+        appId: "1:540124499398:web:9f053c28d0d4d7df9c36c7"
+      };
+
+      if (window.firebase && !firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+        leaderboardRef = db.ref("leaderboard");
+        commentsRef = db.ref("comments");
+      }
+    } catch (err) {
+      console.error("Error initialising Firebase:", err);
+    }
+
+    function firebaseReady() {
+      return !!(db && leaderboardRef && commentsRef);
+    }
+
+    /* ================ UTILITIES ================ */
+    function escapeHTML(str) {
+      return String(str).replace(/[&<>"']/g, function (ch) {
+        switch (ch) {
+          case "&":
+            return "&amp;";
+          case "<":
+            return "&lt;";
+          case ">":
+            return "&gt;";
+          case '"':
+            return "&quot;";
+          case "'":
+            return "&#039;";
+          default:
+            return ch;
+        }
+      });
+    }
+
+    function formatDate(ts) {
+      if (!ts) return "";
+      try {
+        const d = new Date(ts);
+        if (Number.isNaN(d.getTime())) return "";
+        return d.toLocaleDateString();
+      } catch (e) {
+        return "";
+      }
+    }
+
+    /* ================ GAME LOGIC ================ */
+    let player;
+    let playerX = 160;
+    let score = 0;
+    let isGameRunning = false;
+
+    function initBestScore() {
+      const bestEl = document.getElementById("best-score");
+      if (!bestEl) return;
+      const stored = Number(localStorage.getItem("bdb-best-score") || 0);
+      if (!Number.isNaN(stored) && stored > 0) {
+        bestEl.textContent = "Best: " + stored;
+      }
+    }
+
+    function updateBestScore(newScore) {
+      const key = "bdb-best-score";
+      const previous = Number(localStorage.getItem(key) || 0);
+      if (Number.isNaN(previous) || newScore > previous) {
+        localStorage.setItem(key, String(newScore));
+        const bestEl = document.getElementById("best-score");
+        if (bestEl) {
+          bestEl.textContent = "Best: " + newScore;
+        }
+      }
+    }
+
+    function startGame() {
+      if (isGameRunning) return;
+      const startScreen = document.getElementById("startScreen");
+      const gameContainer = document.getElementById("game-container");
+      if (!startScreen || !gameContainer) return;
+
+      isGameRunning = true;
+      startScreen.style.display = "none";
+      gameContainer.style.display = "block";
+
+      player = document.getElementById("player");
+      playerX = 160;
+      score = 0;
+
+      const scoreEl = document.getElementById("score");
+      if (scoreEl) scoreEl.textContent = "Score: 0";
+
+      if (player) {
+        player.style.left = playerX + "px";
+      }
+
+      spawnCan();
+    }
+
+    function movePlayer(e) {
+      if (!isGameRunning || !player) return;
+      if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
+        playerX -= 20;
+      }
+      if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
+        playerX += 20;
+      }
+      // Constrain within game container width (400px)
+      playerX = Math.max(0, Math.min(320, playerX));
+      player.style.left = playerX + "px";
+    }
+
+    document.addEventListener("keydown", movePlayer);
+
+    function spawnCan() {
+      const container = document.getElementById("game-container");
+      if (!container) return;
+
+      const can = document.createElement("div");
+      can.classList.add("beer-can");
+      can.style.left = Math.floor(Math.random() * 340) + "px";
+      container.appendChild(can);
+
+      let y = -70;
+      let speed = 3 + score * 0.15;
+
+      const interval = setInterval(() => {
+        if (!isGameRunning) {
+          clearInterval(interval);
+          can.remove();
+          return;
+        }
+
+        y += speed;
+        can.style.top = y + "px";
+
+        if (y > 530) {
+          const canX = parseInt(can.style.left, 10);
+
+          if (Math.abs(canX - playerX) < 60) {
+            // Caught
+            score++;
+            const scoreEl = document.getElementById("score");
+            if (scoreEl) scoreEl.textContent = "Score: " + score;
+            clearInterval(interval);
+            can.remove();
+            spawnCan();
+          } else {
+            // Missed
+            clearInterval(interval);
+            can.remove();
+            endGame();
+          }
+        }
+      }, 12);
+    }
+
+    function endGame() {
+      if (!isGameRunning) return;
+      isGameRunning = false;
+
+      const finalScore = score;
+      updateBestScore(finalScore);
+
+      let cleanedName = "Anonymous";
+      const rawName =
+        prompt(
+          "Game Over! Score: " +
+            finalScore +
+            "\nEnter your name for the leaderboard:"
+        ) || "";
+
+      if (rawName.trim()) {
+        cleanedName = rawName.trim().slice(0, 32);
+      }
+
+      if (firebaseReady()) {
+        leaderboardRef.push({
+          name: cleanedName,
+          score: finalScore,
+          timestamp: Date.now()
+        });
+      } else {
+        alert(
+          "Your score was " +
+            finalScore +
+            ".\nLeaderboard is currently unavailable (Firebase connection issue)."
+        );
+      }
+
+      // Reset state
+      score = 0;
+      const scoreEl = document.getElementById("score");
+      if (scoreEl) scoreEl.textContent = "Score: 0";
+
+      document.querySelectorAll(".beer-can").forEach((el) => el.remove());
+
+      const gameContainer = document.getElementById("game-container");
+      const startScreen = document.getElementById("startScreen");
+      if (gameContainer) gameContainer.style.display = "none";
+      if (startScreen) startScreen.style.display = "inline-block";
+    }
+
+    /* ================ LEADERBOARD ================ */
+    function loadLeaderboard() {
+      const list = document.getElementById("leaderboard-list");
+      if (!list) return;
+
+      if (!firebaseReady()) {
+        list.className = "empty-state";
+        list.textContent =
+          "Leaderboard is currently unavailable (Firebase not connected).";
+        return;
+      }
+
+      leaderboardRef.on("value", (snap) => {
+        if (!snap.exists()) {
+          list.className = "empty-state";
+          list.textContent =
+            "No scores yet — be the first to play!";
+          return;
+        }
+
+        const entries = [];
+        snap.forEach((s) => entries.push(s.val()));
+
+        entries.sort((a, b) => (b.score || 0) - (a.score || 0));
+        const topTen = entries.slice(0, 10);
+
+        if (!topTen.length) {
+          list.className = "empty-state";
+          list.textContent =
+            "No scores yet — be the first to play!";
+          return;
+        }
+
+        let html = "";
+        topTen.forEach((entry, index) => {
+          const safeName = escapeHTML(entry.name || "Anonymous");
+          const scoreText = typeof entry.score === "number" ? entry.score : 0;
+          const dateText = formatDate(entry.timestamp);
+
+          html += `
+            <div class="entry-card">
+              <div class="leaderboard-entry-header">
+                <span class="leaderboard-rank">#${index + 1}</span>
+                <span class="leaderboard-name">${safeName}</span>
+                <span class="leaderboard-score">${scoreText}</span>
+              </div>
+              ${
+                dateText
+                  ? `<div class="entry-meta">Scored on ${escapeHTML(
+                      dateText
+                    )}</div>`
+                  : ""
+              }
+            </div>
+          `;
+        });
+
+        list.className = "";
+        list.innerHTML = html;
+      }, (err) => {
+        console.error("Error loading leaderboard:", err);
+        list.className = "empty-state";
+        list.textContent =
+          "Unable to load leaderboard right now.";
+      });
+    }
+
+    /* ================ COMMENTS ================ */
+    function submitComment() {
+      const nameEl = document.getElementById("comment-name");
+      const textEl = document.getElementById("comment-text");
+      if (!nameEl || !textEl) return;
+
+      const name = nameEl.value.trim();
+      const text = textEl.value.trim();
+
+      if (!name || !text) {
+        alert("Please enter both a name and a comment.");
+        return;
+      }
+
+      if (!firebaseReady()) {
+        alert(
+          "Comments are currently unavailable (Firebase connection issue)."
+        );
+        return;
+      }
+
+      const safeName = name.slice(0, 40);
+      const safeText = text.slice(0, 300);
+
+      commentsRef.push({
+        name: safeName,
+        text: safeText,
+        timestamp: Date.now()
+      });
+
+      textEl.value = "";
+    }
+
+    function loadComments() {
+      const container = document.getElementById("comments-list");
+      if (!container) return;
+
+      if (!firebaseReady()) {
+        container.innerHTML =
+          '<div class="empty-state">Comments are currently unavailable (Firebase not connected).</div>';
+        return;
+      }
+
+      commentsRef
+        .orderByChild("timestamp")
+        .limitToLast(50)
+        .on(
+          "value",
+          (snap) => {
+            if (!snap.exists()) {
+              container.innerHTML =
+                '<div class="empty-state">No comments yet — share your thoughts above.</div>';
+              return;
+            }
+
+            const comments = [];
+            snap.forEach((c) => comments.push(c.val()));
+            comments.reverse(); // Newest first
+
+            let html = "";
+            comments.forEach((val) => {
+              const safeName = escapeHTML(val.name || "Anonymous");
+              const safeText = escapeHTML(val.text || "").replace(
+                /\n/g,
+                "<br>"
+              );
+              const dateText = formatDate(val.timestamp);
+
+              html += `
+                <div class="comment-card">
+                  <div class="comment-name">${safeName}</div>
+                  <div class="comment-text">${safeText}</div>
+                  ${
+                    dateText
+                      ? `<div class="entry-meta">Posted on ${escapeHTML(
+                          dateText
+                        )}</div>`
+                      : ""
+                  }
+                </div>
+              `;
+            });
+
+            container.innerHTML = html;
+          },
+          (err) => {
+            console.error("Error loading comments:", err);
+            container.innerHTML =
+              '<div class="empty-state">Unable to load comments right now.</div>';
+          }
+        );
+    }
+
+    /* ================ INIT ================ */
+    const startBtn = document.getElementById("start-game-btn");
+    if (startBtn) {
+      startBtn.addEventListener("click", startGame);
+    }
+
+    const commentForm = document.getElementById("comment-form");
+    if (commentForm) {
+      commentForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        submitComment();
+      });
+    }
+
+    // Try to load Firebase-dependent sections
+    if (firebaseReady()) {
+      loadLeaderboard();
+      loadComments();
+    } else {
+      // If Firebase initialises slightly later for any reason, try again once
+      setTimeout(() => {
+        if (firebaseReady()) {
+          loadLeaderboard();
+          loadComments();
+        } else {
+          const lb = document.getElementById("leaderboard-list");
+          if (lb) {
+            lb.className = "empty-state";
+            lb.textContent =
+              "Leaderboard is currently unavailable (Firebase not connected).";
+          }
+          const commentsList = document.getElementById("comments-list");
+          if (commentsList) {
+            commentsList.innerHTML =
+              '<div class="empty-state">Comments are currently unavailable (Firebase not connected).</div>';
+          }
+        }
+      }, 1500);
+    }
+
+    initBestScore();
+  </script>
+</body>
+</html>
